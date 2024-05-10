@@ -32,7 +32,13 @@ async function run() {
   try {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
+    const blogsCollection = client.db("blogsBD").collection("blogs");
 
+    // get all blogs
+    app.get('/blogs', async(req, res) => {
+      const result = await blogsCollection.find().toArray();
+      res.send(result);
+    })
 
     
     // Send a ping to confirm a successful connection
