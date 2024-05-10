@@ -35,12 +35,23 @@ async function run() {
     const blogsCollection = client.db("blogsBD").collection("blogs");
 
     // get all blogs
-    app.get('/blogs', async(req, res) => {
-      const result = await blogsCollection.find().toArray();
+    app.get('/blogs', async (req, res) => {
+      const filter = req.query.filter;
+      let query = {};
+      if (filter) query = { category: filter };
+      const result = await blogsCollection.find(query).toArray();
       res.send(result);
     })
 
-    
+    // post blogs
+    app.post('/blogs', async (req, res) => {
+      const query = req.body;
+      // console.log(query);
+      const result = await blogsCollection.insertOne(query);
+      res.send(result);
+    })
+
+
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
     console.log("Pinged your deployment. You successfully connected to MongoDB!");
@@ -54,9 +65,9 @@ run().catch(console.dir);
 
 
 app.get('/', (req, res) => {
-    res.send('assignment eleven server is running')
+  res.send('assignment eleven server is running')
 })
 
-app.listen(port, ()=>{
-    console.log(`Assignment eleven server running on port ${port}`);
+app.listen(port, () => {
+  console.log(`Assignment eleven server running on port ${port}`);
 })
