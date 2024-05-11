@@ -1,6 +1,6 @@
 const express = require('express');
 const cors = require('cors');
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, serialize, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
 const app = express();
@@ -11,7 +11,6 @@ app.use(cors(
   {
     origin: ['http://localhost:5173', 'http://localhost:5174'],
     credentials: true,
-    optionsSuccessStatus: 200
   }
 ));
 app.use(express.json());
@@ -33,24 +32,56 @@ async function run() {
     // Connect the client to the server	(optional starting in v4.7)
     // await client.connect();
     const blogsCollection = client.db("blogsBD").collection("blogs");
+    const commentCollection = client.db("blogsBD").collection("comment");
 
     // get all blogs
     app.get('/blogs', async (req, res) => {
+      const result = await blogsCollection.find().toArray();
+      res.send(result);
+    })
+
+    app.get('/blogs/:id', async(req, res) => {
+      const id = req.params.id;
+      // console.log(id);
+      const query = {_id: new ObjectId(id)}
+      const result = await blogsCollection.findOne(query);
+      res.send(result);
+    })
+
+    app.get('/all-blogs', async (req, res) => {
       const filter = req.query.filter;
       const search = req.query.search;
       let query = {
-        title: {$regex: search, $options: "i"}
+        title: {$regex: search, $options: 'i'}
       };
       if (filter) query = {...query, category: filter };
       const result = await blogsCollection.find(query).toArray();
       res.send(result);
     })
 
+   
+
     // post blogs
     app.post('/blogs', async (req, res) => {
       const query = req.body;
       // console.log(query);
       const result = await blogsCollection.insertOne(query);
+      res.send(result);
+    })
+
+    // comments related API
+    app.post('/comment', async(req, res) => {
+      const comment = req.body;
+      // console.log(comment);
+      const result = await commentCollection.insertOne(comment);
+      res.send(result);
+    })
+
+    app.get("/comment/:blogId", async (req, res)=>{
+      // console.log(req.params.email)
+      const query = { blogId: req.params.blogId };
+      // console.log(query);
+      const result = await commentCollection.find(query).toArray();
       res.send(result);
     })
 
