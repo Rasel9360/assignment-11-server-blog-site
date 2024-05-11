@@ -85,6 +85,20 @@ async function run() {
       res.send(result);
     })
 
+    // Update blog
+    app.put('/updateBlog/:id', async(req, res) => {
+      const blogsDta = req.body;
+      const query = {_id: new ObjectId(req.params.id)};
+      const options = { upsert: true };
+      const updateDoc = {
+        $set: {
+          ...blogsDta,
+        }
+      }
+      const result = await blogsCollection.updateOne(query, updateDoc, options);
+      res.send(result);
+    })
+
 
     // Send a ping to confirm a successful connection
     // await client.db("admin").command({ ping: 1 });
