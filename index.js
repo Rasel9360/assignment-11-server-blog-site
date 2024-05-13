@@ -53,6 +53,13 @@ async function run() {
       res.cookie('token', token, cookieOptions).send({success: true});
     })
 
+    // clear token
+    app.post('/logout', async (req, res)=>{
+      const user = req.body;
+      console.log("clear cookie", user);
+      res.clearCookie("token", {...cookieOptions, maxAge: 0}).send({success: true})
+    })
+
 
     // get all blogs
     app.get('/blogs', async (req, res) => {
