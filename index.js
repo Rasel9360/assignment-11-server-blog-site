@@ -1,5 +1,7 @@
 const express = require('express');
 const cors = require('cors');
+const jwt = require('jsonwebtoken');
+const cookieParser = require('cookie-parser');
 const { MongoClient, ServerApiVersion, serialize, ObjectId } = require('mongodb');
 require('dotenv').config();
 const port = process.env.PORT || 5000;
@@ -14,6 +16,13 @@ app.use(cors(
   }
 ));
 app.use(express.json());
+app.use(cookieParser())
+
+const cookieOptions = {
+  httpOnly: true,
+  secure: process.env.NODE_ENV === "production",
+  sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+};
 
 
 const uri = `mongodb+srv://${process.env.DB_USER}:${process.env.DB_PASS}@cluster0.bhgag9l.mongodb.net/?retryWrites=true&w=majority&appName=Cluster0`;
@@ -33,6 +42,17 @@ async function run() {
     // await client.connect();
     const blogsCollection = client.db("blogsBD").collection("blogs");
     const commentCollection = client.db("blogsBD").collection("comment");
+
+
+
+    // jwt related api
+    app.post('/jwt', async(req, res) => {
+      const user = req.body;
+      console.log("token", user);
+      const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, {expiresIn: '7d'});
+      res.cookie('token', token, cookieOptions).send({success: true});
+    })
+
 
     // get all blogs
     app.get('/blogs', async (req, res) => {
