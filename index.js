@@ -118,15 +118,34 @@ async function run() {
 
     // wishlist related api
     app.post('/wishlist', async(req, res) => {
-      const query = req.body;
-      console.log(query);
-      const result = await wishlistCollection.insertOne(query)
+      const wishData = req.body;
+      // console.log(query);
+      // check duplicate request
+      const query = {
+        email: wishData.email,
+        blogId: wishData.blogId
+      }
+      
+      const isExist = await wishlistCollection.findOne(query)
+      if (isExist){
+        return res.status(400).send('blog already in the wish list')
+      }
+
+      const result = await wishlistCollection.insertOne(wishData)
       res.send(result);
     })
 
     app.get('/wishlist/:email', async(req, res) => {
       const query = {email: req.params.email};
       const result = await wishlistCollection.find(query).toArray();
+      res.send(result);
+    })
+
+    // delete wishlist
+    app.delete('/wishlist/:id', async(req, res) =>{
+      // console.log(req.params.id);
+      const query = {_id: new ObjectId(req.params.id)};
+      const result = await wishlistCollection.deleteOne(query);
       res.send(result);
     })
 
