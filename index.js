@@ -71,13 +71,14 @@ async function run() {
     // await client.connect();
     const blogsCollection = client.db("blogsBD").collection("blogs");
     const commentCollection = client.db("blogsBD").collection("comment");
+    const wishlistCollection = client.db("blogsBD").collection("wishlist");
 
 
 
     // jwt related api
     app.post('/jwt', logger, async (req, res) => {
       const user = req.body;
-      console.log("token", user);
+      // console.log("token", user);
       const token = jwt.sign(user, process.env.ACCESS_TOKEN_SECRET, { expiresIn: '7d' });
       res.cookie('token', token, cookieOptions).send({ success: true });
     })
@@ -115,6 +116,19 @@ async function run() {
       res.send(result);
     })
 
+    // wishlist related api
+    app.post('/wishlist', async(req, res) => {
+      const query = req.body;
+      console.log(query);
+      const result = await wishlistCollection.insertOne(query)
+      res.send(result);
+    })
+
+    app.get('/wishlist/:email', async(req, res) => {
+      const query = {email: req.params.email};
+      const result = await wishlistCollection.find(query).toArray();
+      res.send(result);
+    })
 
 
     // post blogs
