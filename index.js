@@ -60,7 +60,7 @@ const verifyToken = (req, res, next) => {
       return res.status(401).send({ message: "unauthorized access" })
     }
     req.user = decoded;
-    next()
+    next();
   })
 }
 
@@ -117,17 +117,18 @@ async function run() {
     })
 
     // wishlist related api
-    app.post('/wishlist', async(req, res) => {
+    app.post('/wishlist', async (req, res) => {
       const wishData = req.body;
       // console.log(query);
+
       // check duplicate request
       const query = {
         email: wishData.email,
         blogId: wishData.blogId
       }
-      
+
       const isExist = await wishlistCollection.findOne(query)
-      if (isExist){
+      if (isExist) {
         return res.status(400).send('blog already in the wish list')
       }
 
@@ -135,16 +136,24 @@ async function run() {
       res.send(result);
     })
 
-    app.get('/wishlist/:email', async(req, res) => {
-      const query = {email: req.params.email};
+    app.get('/wishlist/:email', logger, verifyToken, async (req, res) => {
+      console.log(req.params.email);
+
+      // console.log("cookies:", req.cookies);
+      console.log("token owner info", req.user);
+      if (req.user.email !== req.params.email) {
+        return res.status(403).send({ message: "forbidden access" })
+      }
+
+      const query = { email: req.params.email };
       const result = await wishlistCollection.find(query).toArray();
       res.send(result);
     })
 
     // delete wishlist
-    app.delete('/wishlist/:id', async(req, res) =>{
+    app.delete('/wishlist/:id', async (req, res) => {
       // console.log(req.params.id);
-      const query = {_id: new ObjectId(req.params.id)};
+      const query = { _id: new ObjectId(req.params.id) };
       const result = await wishlistCollection.deleteOne(query);
       res.send(result);
     })
